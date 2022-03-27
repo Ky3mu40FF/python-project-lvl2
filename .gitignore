@@ -1,0 +1,12 @@
+# Python virual environment
+.venv
+
+# Byte-compiled / optimized / DLL files
+__pycache__
+
+# Built package
+dist
+
+# pytest-cov cache and result
+.coverage
+coverage.xml

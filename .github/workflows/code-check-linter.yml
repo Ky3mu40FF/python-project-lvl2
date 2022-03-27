@@ -1,0 +1,31 @@
+name: code-check
+
+on: push
+
+jobs:
+  flake8-lint:
+
+    runs-on: ubuntu-latest
+    name: Tests and Lint
+    strategy:
+      matrix:
+        python-version: ["3.8"]
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install and configure Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: 1.1.13
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+      - name: Install dependencies with Poetry
+        run: make install
+      - name: Run Tests
+        run: make test
+      - name: Run Linter
+        run: make lint
