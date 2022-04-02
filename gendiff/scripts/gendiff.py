@@ -13,8 +13,13 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description='Generate diff')
     parser.add_argument('first_file')
     parser.add_argument('second_file')
+    parser.add_argument('-f', '--format', help='set format of output')
     args = parser.parse_args(argv)
-    print(args)
+    print('format: {0}, first_file: {1}, second_file: {2}'.format(
+        args.format,
+        args.first_file,
+        args.second_file,
+    ))
 
 
 if __name__ == '__main__':

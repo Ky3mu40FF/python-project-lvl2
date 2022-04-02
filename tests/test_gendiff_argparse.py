@@ -2,7 +2,7 @@
 from gendiff.scripts.gendiff import main
 
 
-help_output = '''usage: pytest [-h] first_file second_file
+help_output = '''[-h] [-f FORMAT] first_file second_file
 
 Generate diff
 
@@ -11,8 +11,9 @@ positional arguments:
   second_file
 
 optional arguments:
-  -h, --help   show this help message and exit
-'''
+  -h, --help            show this help message and exit
+  -f FORMAT, --format FORMAT
+                        set format of output'''
 no_args_error_substring = "error: the following arguments are required: first_file, second_file"
 no_second_arg_error_substring = "error: the following arguments are required: second_file"
 
@@ -35,13 +36,17 @@ def test_gendiff_main_with_one_arg(capsys):
     assert no_second_arg_error_substring in captured.err
 
 
-def test_gendiff_main_with_both_args(capsys):
+def test_gendiff_main_with_all_args(capsys):
     try:
-        main(["first_file", "second_file"])
+        main([
+            *("-f", "json"),
+            "first_file.json",
+            "second_file.json",
+        ])
     except SystemExit:
         pass
     captured = capsys.readouterr()
-    assert "Namespace(first_file='first_file', second_file='second_file')" in captured.out
+    assert "format: json, first_file: first_file.json, second_file: second_file.json" in captured.out
 
 
 def test_gendiff_main_call_help(capsys):
@@ -50,4 +55,5 @@ def test_gendiff_main_call_help(capsys):
     except SystemExit:
         pass
     captured = capsys.readouterr()
-    assert help_output == captured.out
+    print(captured.out)
+    assert help_output in captured.out
