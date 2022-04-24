@@ -29,7 +29,7 @@ def test_gendiff_main_without_args(capsys):
 
 def test_gendiff_main_with_one_arg(capsys):
     try:
-        main(["first_file"])
+        main(["./tests/fixtures/file1.json"])
     except SystemExit:
         pass
     captured = capsys.readouterr()
@@ -40,13 +40,20 @@ def test_gendiff_main_with_all_args(capsys):
     try:
         main([
             *("-f", "json"),
-            "first_file.json",
-            "second_file.json",
+            "./tests/fixtures/file1.json",
+            "./tests/fixtures/file2.json",
         ])
     except SystemExit:
         pass
     captured = capsys.readouterr()
-    assert "format: json, first_file: first_file.json, second_file: second_file.json" in captured.out
+    assert """{
+  - follow: False
+    host: hexlet.io
+  - proxy: 123.234.53.22
+  - timeout: 50
+  + timeout: 20
+  + verbose: True
+}""" in captured.out
 
 
 def test_gendiff_main_call_help(capsys):

@@ -3,6 +3,8 @@
 
 import argparse
 
+from ..generator import generate_diff
+
 
 def main(argv=None):
     """Gendiff entry point.
@@ -15,11 +17,7 @@ def main(argv=None):
     parser.add_argument('second_file')
     parser.add_argument('-f', '--format', help='set format of output')
     args = parser.parse_args(argv)
-    print('format: {0}, first_file: {1}, second_file: {2}'.format(
-        args.format,
-        args.first_file,
-        args.second_file,
-    ))
+    print(generate_diff(args.first_file, args.second_file))
 
 
 if __name__ == '__main__':
