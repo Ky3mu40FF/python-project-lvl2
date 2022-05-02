@@ -1,27 +1,14 @@
 """generator module."""
 
-import json
 from types import MappingProxyType  # Immutable dict for constant (WPS407)
+
+from .parser import get_parsed_file
 
 KEY_DIFF_SIGNS = MappingProxyType({
     'REMAINED': ' ',
     'REMOVED': '-',
     'ADDED': '+',
 })
-
-
-def get_parsed_file(filepath):
-    """Open file with passed path.
-
-    Args:
-        filepath (str): String with path to file.
-
-    Returns:
-        (dict): Dict of parsed file (json to dict).
-    """
-    with open(filepath, 'r') as input_file:
-        parsed_file = json.load(input_file)
-    return parsed_file
 
 
 def format_diff_output(diff, key, param_value):
@@ -92,8 +79,17 @@ def generate_diff(first_file, second_file):
     Returns:
         (str): String with differences of two files.
     """
-    data1 = get_parsed_file(first_file)
-    data2 = get_parsed_file(second_file)
+    try:
+        data1 = get_parsed_file(first_file)
+    except ValueError as e1_info:
+        print(e1_info)
+        return ''
+
+    try:
+        data2 = get_parsed_file(second_file)
+    except ValueError as e2_info:
+        print(e2_info)
+        return ''
 
     key_diffs = []
     for key in sorted(iter(data1.keys() | data2.keys())):
