@@ -1,75 +1,71 @@
 """generator module."""
 
-from types import MappingProxyType  # Immutable dict for constant (WPS407)
-
+from .formatters import FORMATTERS
 from .parser import get_parsed_file
 
-KEY_DIFF_SIGNS = MappingProxyType({
-    'REMAINED': ' ',
-    'REMOVED': '-',
-    'ADDED': '+',
-})
 
-
-def format_diff_output(diff, key, param_value):
-    """Generate formatted string with diff between two files at specific key.
-
+def compare_data(data1, data2):
+    """Compare two data.
+    
     Args:
-        diff (str): Type of difference.
-        key (str): Key to compare.
-        param_value: Value for specific key.
+        data1 (): DATA1.
+        data2 (): DATA2.
 
     Returns:
-        (str): String with difference of two files at specific key.
-    """
-    return '  {0} {1}: {2}'.format(diff, key, param_value)
+        (dict): COMPARE RESULT."""
+    result = {}
+    common_keys = data1.keys() & data2.keys()
+    removed_keys = data1.keys() - data2.keys()
+    added_keys = data2.keys() - data1.keys()
+
+    for key in common_keys:
+        if isinstance(data1[key], dict) and isinstance(data2[key], dict):
+            result[key] = {
+                'status': 'NESTED',
+                'value': compare_data(data1[key], data2[key]),
+            }
+        elif data1[key] == data2[key]:
+            result[key] = {
+                'status': 'EQUAL',
+                'value': data1[key],
+            }
+        else:
+            result[key] = {
+                'status': 'MODIFIED',
+                'old_value': compare_data(data1[key], data1[key]) if isinstance(data1[key], dict) else data1[key],
+                'value': compare_data(data2[key], data2[key]) if isinstance(data2[key], dict) else data2[key],
+            }
+
+    for key in removed_keys:
+        value = compare_data(data1[key], data1[key]) if isinstance(data1[key], dict) else data1[key]
+        result[key] = {
+                'status': 'REMOVED', 
+                'value': value,
+            }
+
+    for key in added_keys:
+        value = compare_data(data2[key], data2[key]) if isinstance(data2[key], dict) else data2[key]
+        result[key] = {
+                'status': 'ADDED', 
+                'value': value,
+            }
+
+    return result
 
 
-def get_changes(data1, data2, key):
-    """Generate list with diff between two files at specific key.
-
+def format_diff(diff, formatter):
+    """Format diff with selected formatter.
+    
     Args:
-        data1 (dict): Dict of first parsed file.
-        data2 (dict): Dict of second parsed file.
-        key (str): Key to compare.
-
+        diff (dict): Dict with diff between two datas.
+        formatter (str): String with formatter name.
+    
     Returns:
-        (List): List with differences of two files at specific key.
-    """
-    if key in (data1.keys() & data2.keys()):
-        if data1[key] == data2[key]:
-            return [format_diff_output(
-                KEY_DIFF_SIGNS['REMAINED'],
-                key,
-                data1[key],
-            )]
-        return [
-            format_diff_output(
-                KEY_DIFF_SIGNS['REMOVED'],
-                key,
-                data1[key],
-            ),
-            format_diff_output(
-                KEY_DIFF_SIGNS['ADDED'],
-                key,
-                data2[key],
-            ),
-        ]
-    elif key in (data1.keys() - data2.keys()):
-        return [format_diff_output(
-            KEY_DIFF_SIGNS['REMOVED'],
-            key,
-            data1[key],
-        )]
-    elif key in (data2.keys() - data1.keys()):
-        return [format_diff_output(
-            KEY_DIFF_SIGNS['ADDED'],
-            key,
-            data2[key],
-        )]
+        (str): Formatted diff."""
+    return formatter(diff)
 
 
-def generate_diff(first_file, second_file):
+def generate_diff(first_file, second_file, formatter):
     """Generate string with diffs between two files.
 
     Args:
@@ -81,18 +77,16 @@ def generate_diff(first_file, second_file):
     """
     try:
         data1 = get_parsed_file(first_file)
-    except ValueError as e1_info:
-        print(e1_info)
+    except ValueError as file1_exception_info:
+        print(file1_exception_info)
         return ''
 
     try:
         data2 = get_parsed_file(second_file)
-    except ValueError as e2_info:
-        print(e2_info)
+    except ValueError as file2_exception_info:
+        print(file2_exception_info)
         return ''
 
-    key_diffs = []
-    for key in sorted(iter(data1.keys() | data2.keys())):
-        key_diffs.extend(get_changes(data1, data2, key))
+    diff = compare_data(data1, data2)
 
-    return '{0}\n{1}\n{2}'.format('{', '\n'.join(key_diffs), '}')
+    return format_diff(diff, FORMATTERS[formatter])
