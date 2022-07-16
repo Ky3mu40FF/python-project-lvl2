@@ -10,3 +10,5 @@
 # Asciinema records:
 ## Using gendiff with flat json and yaml files (Step 5):
 [![asciicast](https://asciinema.org/a/fHTqjkrZypwcPQu321nAmvy6H.svg)](https://asciinema.org/a/fHTqjkrZypwcPQu321nAmvy6H)
+## Using gendiff with nested json and yaml files (Step 6):
+[![asciicast](https://asciinema.org/a/IcSKETp2253K5BOSGLChnuLI5.svg)](https://asciinema.org/a/IcSKETp2253K5BOSGLChnuLI5)
