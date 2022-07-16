@@ -2,7 +2,13 @@
 
 import pytest
 from gendiff.parser import get_parsed_file
-from .conftest import JSON_FILES_RELATIVE_PATHS, YAML_FILES_RELATIVE_PATHS, FILE_RELATIVE_PATH_WRONG_EXTENSION, json_files_absolute_paths_fixture
+from .conftest import (
+    TEST_FILES_RELATIVE_PATHS,
+    FILE_RELATIVE_PATH_WRONG_EXTENSION,
+    test_files_absolute_paths_fixture,
+    FLAT_JSON_1,
+    FLAT_YAML_1,
+)
 
 
 @pytest.fixture
@@ -16,12 +22,12 @@ def file1_fixture():
 
 
 def test_get_parsed_file_json(file1_fixture):
-    parsed_file = get_parsed_file(JSON_FILES_RELATIVE_PATHS['flat_file1'])
+    parsed_file = get_parsed_file(TEST_FILES_RELATIVE_PATHS[FLAT_JSON_1])
     assert parsed_file == file1_fixture
 
 
 def test_get_parsed_file_yaml(file1_fixture):
-    parsed_file = get_parsed_file(YAML_FILES_RELATIVE_PATHS['flat_file1'])
+    parsed_file = get_parsed_file(TEST_FILES_RELATIVE_PATHS[FLAT_YAML_1])
     assert parsed_file == file1_fixture
 
 
@@ -32,7 +38,7 @@ def test_get_parsed_file_wrong_extension():
 
 def test_get_parsed_file_json_absolute_path(
         file1_fixture, 
-        json_files_absolute_paths_fixture,
+        test_files_absolute_paths_fixture,
     ):
-    parsed_file = get_parsed_file(json_files_absolute_paths_fixture['flat_file1'])
+    parsed_file = get_parsed_file(test_files_absolute_paths_fixture[FLAT_JSON_1])
     assert parsed_file == file1_fixture

@@ -1,9 +1,15 @@
 """tests for gendiff package."""
 from gendiff.scripts.gendiff import main
-from .conftest import JSON_FILES_RELATIVE_PATHS
+from .conftest import (
+  TEST_FILES_RELATIVE_PATHS,
+  FLAT_JSON_1,
+  FLAT_JSON_2,
+  NESTED_JSON_1,
+  NESTED_JSON_2,
+)
 
 
-file1_file2_diff = """{
+FLAT_FILES_DIFF = """{
   - follow: false
     host: hexlet.io
   - proxy: 123.234.53.22
@@ -12,7 +18,7 @@ file1_file2_diff = """{
   + verbose: true
 }"""
 
-file3_file4_diff = """{
+NESTED_FILES_DIFF = """{
     common: {
       + follow: false
         setting1: Value 1
@@ -57,7 +63,7 @@ file3_file4_diff = """{
     }
 }"""
 
-help_output = '''[-h] [-f FORMAT] first_file second_file
+HELP_OUTPUT = '''[-h] [-f FORMAT] first_file second_file
 
 Generate diff
 
@@ -69,8 +75,8 @@ optional arguments:
   -h, --help            show this help message and exit
   -f FORMAT, --format FORMAT
                         set format of output'''
-no_args_error_substring = "error: the following arguments are required: first_file, second_file"
-no_second_arg_error_substring = "error: the following arguments are required: second_file"
+NO_ARGS_ERROR_SUBSTRING = "error: the following arguments are required: first_file, second_file"
+NO_SECOND_ARG_ERROR_SUBSTRING = "error: the following arguments are required: second_file"
 
 
 def test_gendiff_main_without_args(capsys):
@@ -79,30 +85,42 @@ def test_gendiff_main_without_args(capsys):
     except SystemExit:
         pass
     captured = capsys.readouterr()
-    assert no_args_error_substring in captured.err
+    assert NO_ARGS_ERROR_SUBSTRING in captured.err
 
 
 def test_gendiff_main_with_one_arg(capsys):
     try:
-        main([JSON_FILES_RELATIVE_PATHS['flat_file1']])
+        main([TEST_FILES_RELATIVE_PATHS[FLAT_JSON_1]])
     except SystemExit:
         pass
     captured = capsys.readouterr()
-    assert no_second_arg_error_substring in captured.err
+    assert NO_SECOND_ARG_ERROR_SUBSTRING in captured.err
 
 
 def test_gendiff_main_with_all_args(capsys):
     try:
         main([
             *("-f", "stylish"),
-            JSON_FILES_RELATIVE_PATHS['flat_file1'],
-            JSON_FILES_RELATIVE_PATHS['flat_file2'],
+            TEST_FILES_RELATIVE_PATHS[FLAT_JSON_1],
+            TEST_FILES_RELATIVE_PATHS[FLAT_JSON_2],
         ])
     except SystemExit:
         pass
     captured = capsys.readouterr()
-    assert file1_file2_diff in captured.out
+    assert FLAT_FILES_DIFF in captured.out
 
+
+def test_gendiff_main_with_nested(capsys):
+    try:
+        main([
+            *("-f", "stylish"),
+            TEST_FILES_RELATIVE_PATHS[NESTED_JSON_1],
+            TEST_FILES_RELATIVE_PATHS[NESTED_JSON_2],
+        ])
+    except SystemExit:
+        pass
+    captured = capsys.readouterr()
+    assert NESTED_FILES_DIFF in captured.out
 
 def test_gendiff_main_call_help(capsys):
     try:
@@ -111,4 +129,4 @@ def test_gendiff_main_call_help(capsys):
         pass
     captured = capsys.readouterr()
     print(captured.out)
-    assert help_output in captured.out
+    assert HELP_OUTPUT in captured.out

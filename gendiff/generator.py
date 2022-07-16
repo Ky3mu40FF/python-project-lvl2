@@ -8,77 +8,125 @@ from .change_state import (
     REMOVED,
     UNCHANGED,
 )
-from .formatters import FORMATTERS
+from .formatters.formatters import FORMATTERS
 from .parser import get_parsed_file
 
 
-def set_state(state, key, child):
-    return {(state, key): child}
+def set_state(change_state, key, child):
+    """Create pair in format {(state, key): value}.
+
+    Args:
+        change_state (str): Change state of current pair key:value.
+        key (any): Key of pair.
+        child (any): Value of pair
+
+    Returns:
+        (dict): Compared pair key:value with change state.
+    """
+    return {(change_state, key): child}
+
+
+def get_proper_child_format(child1, child2):
+    """Compare or return children in case are they dicts or not.
+
+    Args:
+        child1 (any): Child from first dataset.
+        child2 (any): Child from second dataset.
+
+    Returns:
+        (any): Children compare result in proper format:
+            dict with change state or first not dict child as is.
+    """
+    if not isinstance(child1, dict):
+        return child1
+    if not isinstance(child2, dict):
+        return child2
+    return compare_two_trees(child1, child2)
 
 
 def compare_children(key, child1, child2):
+    """Compare children from two datasets at given key.
+
+    Args:
+        key (any): Same key from both datasets.
+        child1 (any): Child from first dataset.
+        child2 (any): Child from second dataset.
+
+    Returns:
+        (dict): Compare result in format {(state, key): value}.
+    """
     children_comparison_result = {}
-    any_nested = isinstance(child1, dict) or isinstance(child2, dict)
+    both_nested = isinstance(child1, dict) and isinstance(child2, dict)
 
     if child1 == child2:
         children_comparison_result.update(set_state(
-            UNCHANGED,
-            key,
-            child1,
+            change_state=UNCHANGED,
+            key=key,
+            child=get_proper_child_format(child1, child1),
         ))
-    # If none of passed childs is nested and childs are not equal
-    elif not (any_nested) and (child1 != child2):
+    elif (child1 != child2) and both_nested:
         children_comparison_result.update(set_state(
-            CHANGED_BEFORE,
-            key,
-            child1,
+            change_state=NESTED,
+            key=key,
+            child=get_proper_child_format(child1, child2),
+        ))
+    else:
+        children_comparison_result.update(set_state(
+            change_state=CHANGED_BEFORE,
+            key=key,
+            child=get_proper_child_format(child1, child1),
         ))
         children_comparison_result.update(set_state(
-            CHANGED_AFTER,
-            key,
-            child2,
-        ))
-    elif any_nested and child1 != child2:
-        children_comparison_result.update(set_state(
-            NESTED,
-            key,
-            get_change_states(child1, child2),
+            change_state=CHANGED_AFTER,
+            key=key,
+            child=get_proper_child_format(child2, child2),
         ))
     return children_comparison_result
 
 
-def get_change_states(data1, data2):
-    """
-    Get change states between two datasets.
+def compare_two_trees(tree1, tree2):
+    """Get change states between two datasets.
 
     Args:
-        data1 (dict): DATA1.
-        data2 (dict): DATA2.
+        tree1 (dict): First dict to compare and to set change state.
+        tree2 (dict): Second dict to compare and to set change state.
 
     Returns:
         (dict): COMPARE RESULT.
     """
     data_with_change_states = {}
 
-    for common_key in data1.keys() & data2.keys():
+    for common_key in tree1.keys() & tree2.keys():
         data_with_change_states.update(compare_children(
             common_key,
-            data1[common_key],
-            data2[common_key],
+            tree1[common_key],
+            tree2[common_key],
         ))
 
-    for removed_key in data1.keys() - data2.keys():
+    for removed_key in tree1.keys() - tree2.keys():
+        # Get value after compare_children function using composite key
+        formatted_value = compare_children(
+            removed_key,
+            tree1[removed_key],
+            tree1[removed_key],
+        )[(UNCHANGED, removed_key)]
         data_with_change_states.update(set_state(
             REMOVED,
             removed_key,
-            data1[removed_key],
+            formatted_value,
         ))
 
-    for added_key in data2.keys() - data1.keys():
+    for added_key in tree2.keys() - tree1.keys():
+        # Get value after compare_children function using composite key
+        formatted_value = compare_children(
+            added_key,
+            tree2[added_key],
+            tree2[added_key],
+        )[(UNCHANGED, added_key)]
         data_with_change_states.update(set_state(
             ADDED,
             added_key,
-            data2[added_key],
+            formatted_value,
         ))
 
     return data_with_change_states
@@ -111,17 +159,17 @@ def generate_diff(first_file, second_file, formatter):
         (str): String with differences of two files.
     """
     try:
-        data1 = get_parsed_file(first_file)
+        tree1 = get_parsed_file(first_file)
     except ValueError as file1_exception_info:
         print(file1_exception_info)
         return ''
 
     try:
-        data2 = get_parsed_file(second_file)
+        tree2 = get_parsed_file(second_file)
     except ValueError as file2_exception_info:
         print(file2_exception_info)
         return ''
 
-    diff = get_change_states(data1, data2)
+    diff = compare_two_trees(tree1, tree2)
 
     return format_diff(diff, FORMATTERS[formatter])

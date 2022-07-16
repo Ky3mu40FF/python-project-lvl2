@@ -10,3 +10,6 @@ dist
 # pytest-cov cache and result
 .coverage
 coverage.xml
+
+# Visual Studio Code Plugin folder
+.vscode
