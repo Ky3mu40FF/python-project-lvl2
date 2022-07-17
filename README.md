@@ -14,3 +14,5 @@
 [![asciicast](https://asciinema.org/a/IcSKETp2253K5BOSGLChnuLI5.svg)](https://asciinema.org/a/IcSKETp2253K5BOSGLChnuLI5)
 ## Using gendiff with plain formatter (Step 7):
 [![asciicast](https://asciinema.org/a/nIg4jXBU57LEovAaDQjbQyM20.svg)](https://asciinema.org/a/nIg4jXBU57LEovAaDQjbQyM20)
+## Using gendiff with json formatter (Step 8):
+[![asciicast](https://asciinema.org/a/7H1kRyFJEgDHnAl68dCjnQIAB.svg)](https://asciinema.org/a/7H1kRyFJEgDHnAl68dCjnQIAB)

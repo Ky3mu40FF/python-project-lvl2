@@ -29,7 +29,7 @@ Property 'group2' was removed
 Property 'group3' was added with value: [complex value]"""
 
 
-def test_gendiff_nested_json_plain_formatter(capsys):
+def test_gendiff_nested_json_plain_formatter():
     nested_json_plain_diff_result = generate_diff(
         TEST_FILES_RELATIVE_PATHS[NESTED_JSON_1],
         TEST_FILES_RELATIVE_PATHS[NESTED_JSON_2],
@@ -38,7 +38,7 @@ def test_gendiff_nested_json_plain_formatter(capsys):
     assert nested_json_plain_diff_result == NESTED_FILES_PLAIN_DIFF
 
 
-def test_gendiff_flat_json_stylish_formatter(capsys):
+def test_gendiff_flat_json_stylish_formatter():
     flat_json_plain_diff_result = generate_diff(
         TEST_FILES_RELATIVE_PATHS[FLAT_JSON_1],
         TEST_FILES_RELATIVE_PATHS[FLAT_JSON_2],
@@ -47,7 +47,7 @@ def test_gendiff_flat_json_stylish_formatter(capsys):
     assert flat_json_plain_diff_result == FLAT_FILES_PLAIN_DIFF
 
 
-def test_gendiff_nested_yaml_stylish_formatter(capsys):
+def test_gendiff_nested_yaml_stylish_formatter():
     nested_yaml_plain_diff_result = generate_diff(
         TEST_FILES_RELATIVE_PATHS[NESTED_YAML_1],
         TEST_FILES_RELATIVE_PATHS[NESTED_YAML_2],

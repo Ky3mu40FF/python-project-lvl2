@@ -1,0 +1,21 @@
+{
+    "follow": {
+        "state": "removed",
+        "value": false
+    },
+    "proxy": {
+        "state": "removed",
+        "value": "123.234.53.22"
+    },
+    "timeout": {
+        "state": "changed",
+        "values": {
+            "changed_before": null,
+            "changed_after": 20
+        }
+    },
+    "verbose": {
+        "state": "added",
+        "value": true
+    }
+}

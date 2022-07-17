@@ -1,0 +1,66 @@
+{
+    "common": {
+        "follow": {
+            "state": "added",
+            "value": false
+        },
+        "setting2": {
+            "state": "removed",
+            "value": 200
+        },
+        "setting3": {
+            "state": "changed",
+            "values": {
+                "changed_before": null,
+                "changed_after": null
+            }
+        },
+        "setting4": {
+            "state": "added",
+            "value": "blah blah"
+        },
+        "setting5": {
+            "state": "added",
+            "value": null
+        },
+        "setting6": {
+            "doge": {
+                "wow": {
+                    "state": "changed",
+                    "values": {
+                        "changed_before": null,
+                        "changed_after": "so much"
+                    }
+                }
+            },
+            "ops": {
+                "state": "added",
+                "value": "vops"
+            }
+        }
+    },
+    "group1": {
+        "baz": {
+            "state": "changed",
+            "values": {
+                "changed_before": null,
+                "changed_after": "bars"
+            }
+        },
+        "nest": {
+            "state": "changed",
+            "values": {
+                "changed_before": null,
+                "changed_after": "str"
+            }
+        }
+    },
+    "group2": {
+        "state": "removed",
+        "value": null
+    },
+    "group3": {
+        "state": "added",
+        "value": null
+    }
+}
