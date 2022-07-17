@@ -1,5 +1,7 @@
 """generator module."""
 
+from collections import namedtuple
+
 from .change_state import (
     ADDED,
     CHANGED_AFTER,
@@ -23,7 +25,14 @@ def set_state(change_state, key, child):
     Returns:
         (dict): Compared pair key:value with change state.
     """
-    return {(change_state, key): child}
+    CompositeKey = namedtuple(
+        'Composite_Key',
+        [
+            'state',
+            'property',
+        ],
+    )
+    return {CompositeKey(change_state, key): child}
 
 
 def get_proper_child_format(child1, child2):
