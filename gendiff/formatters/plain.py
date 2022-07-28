@@ -61,6 +61,8 @@ def convert_value(value_to_convert):
         if isinstance(value_to_convert, dict):
             return '[complex value]'
         return repr(value_to_convert)
+    if not (isinstance(value_to_convert, bool) or value_to_convert is None):
+        return repr(value_to_convert)
     # Return value from defined converting pairs.
     # Otherwise return printable representational string of the given value.
     return VALUES_CONVERT_PAIRS.get(

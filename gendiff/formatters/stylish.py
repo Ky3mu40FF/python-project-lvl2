@@ -58,6 +58,8 @@ def convert_value(value_to_convert):
     Returns:
         (any): Converted value to JSON format.
     """
+    if not (isinstance(value_to_convert, bool) or value_to_convert is None):
+        return value_to_convert
     # If value not found in keys,
     # than return value as is
     return VALUES_CONVERT_PAIRS.get(

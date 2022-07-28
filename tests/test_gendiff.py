@@ -76,6 +76,30 @@ TEST_PAIRS = [
         'json',
         './tests/fixtures/expected/json_formatter_nested_files.json',
     ),
+    (
+        './tests/fixtures/json_fixtures/file1.json',
+        './tests/fixtures/json_fixtures/file2.json',
+        'stylish',
+        './tests/fixtures/expected/hexlet_result_stylish',
+    ),
+    (
+        './tests/fixtures/yaml_fixtures/file1.yml',
+        './tests/fixtures/yaml_fixtures/file2.yml',
+        'stylish',
+        './tests/fixtures/expected/hexlet_result_stylish',
+    ),
+    (
+        './tests/fixtures/json_fixtures/file1.json',
+        './tests/fixtures/json_fixtures/file2.json',
+        'plain',
+        './tests/fixtures/expected/hexlet_result_plain',
+    ),
+    (
+        './tests/fixtures/yaml_fixtures/file1.yml',
+        './tests/fixtures/yaml_fixtures/file2.yml',
+        'plain',
+        './tests/fixtures/expected/hexlet_result_plain',
+    ),
 ]
 
 
