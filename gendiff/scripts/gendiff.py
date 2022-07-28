@@ -7,6 +7,11 @@ from ..generator import generate_diff
 
 
 def parse_args():
+    """Parse input arguments.
+
+    Returns:
+        (any): Parsed arguments.
+    """
     parser = argparse.ArgumentParser(description='Generate diff')
     parser.add_argument('first_file')
     parser.add_argument('second_file')
@@ -20,11 +25,7 @@ def parse_args():
 
 
 def main():
-    """Gendiff entry point.
-
-    Args:
-        argv (str): String with passed arguments.
-    """
+    """Gendiff entry point."""
     args = parse_args()
     print(generate_diff(
         args.first_file,
