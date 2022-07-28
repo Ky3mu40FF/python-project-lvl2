@@ -1,7 +1,7 @@
 """tests for gendiff package."""
 import pytest
 
-from gendiff.generator import generate_diff
+from gendiff.generate_diff import generate_diff
 
 TEST_PAIRS = [
     (
