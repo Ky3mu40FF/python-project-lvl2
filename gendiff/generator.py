@@ -10,8 +10,9 @@ from .change_state import (
     REMOVED,
     UNCHANGED,
 )
+from .file_handler import import_data
 from .formatters.formatters import FORMATTERS
-from .parser import get_parsed_file
+from .parser import parse_data
 
 
 def set_state(change_state, key, child):
@@ -155,6 +156,34 @@ def format_diff(diff, formatter):
     return formatter(diff)
 
 
+def get_data(url):
+    """
+    Try to open and parse given data.
+
+    Args:
+        url (str): String with url to data.
+
+    Returns:
+        (any): Parsed data. None if import or parsing failed.
+    """
+    try:
+        imported_data = import_data(url)
+    except IOError as imported_data_exception_info:
+        print(imported_data_exception_info)
+        return None
+
+    try:
+        parsed_tree = parse_data(
+            imported_data.data_format,
+            imported_data.data,
+        )
+    except ValueError as parsed_tree_exception_info:
+        print(parsed_tree_exception_info)
+        return None
+
+    return parsed_tree
+
+
 def generate_diff(first_file, second_file, formatter):
     """
     Generate string with diffs between two files.
@@ -167,16 +196,10 @@ def generate_diff(first_file, second_file, formatter):
     Returns:
         (str): String with differences of two files.
     """
-    try:
-        tree1 = get_parsed_file(first_file)
-    except ValueError as file1_exception_info:
-        print(file1_exception_info)
-        return ''
+    tree1 = get_data(first_file)
+    tree2 = get_data(second_file)
 
-    try:
-        tree2 = get_parsed_file(second_file)
-    except ValueError as file2_exception_info:
-        print(file2_exception_info)
+    if not all([tree1, tree2]):
         return ''
 
     diff = compare_two_trees(tree1, tree2)
