@@ -123,5 +123,8 @@ def render(diff_data):
             level_diff.update(format_diff(composite_key, compared_value))
 
         return level_diff
-
-    return json.dumps(walk(diff_data))
+    
+    return json.dumps(
+            obj=walk(diff_data),
+            indent=4,
+        )

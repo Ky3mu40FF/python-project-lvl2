@@ -1,75 +1,55 @@
 """tests for gendiff package."""
+from unittest import mock
 from gendiff.scripts.gendiff import main
-from .conftest import (
-  TEST_FILES_RELATIVE_PATHS,
-  FLAT_JSON_1,
-  FLAT_JSON_2,
-  NESTED_JSON_1,
-  NESTED_JSON_2,
-)
+import pytest
+
+@pytest.fixture
+def argparse_help_output_fixture():
+    with open('./tests/fixtures/expected/argparse_help_output.txt', 'r') as file:
+        cli_output = file.read()
+    return cli_output
 
 
-FLAT_FILES_DIFF = """{
-  - follow: false
-    host: hexlet.io
-  - proxy: 123.234.53.22
-  - timeout: 50
-  + timeout: 20
-  + verbose: true
-}"""
-
-HELP_OUTPUT = '''[-h] [-f FORMAT] first_file second_file
-
-Generate diff
-
-positional arguments:
-  first_file
-  second_file
-
-optional arguments:
-  -h, --help            show this help message and exit
-  -f FORMAT, --format FORMAT
-                        set format of output'''
-NO_ARGS_ERROR_SUBSTRING = "error: the following arguments are required: first_file, second_file"
-NO_SECOND_ARG_ERROR_SUBSTRING = "error: the following arguments are required: second_file"
+@pytest.fixture
+def argparse_no_args_output_fixture():
+    with open('./tests/fixtures/expected/argparse_no_args_output.txt', 'r') as file:
+        cli_output = file.read()
+    return cli_output
 
 
-def test_gendiff_main_without_args(capsys):
+@pytest.fixture
+def argparse_no_second_file_output_fixture():
+    with open('./tests/fixtures/expected/argparse_no_second_file_output.txt', 'r') as file:
+        cli_output = file.read()
+    return cli_output
+
+
+def test_gendiff_main_call_help(capsys, argparse_help_output_fixture):
+    
     try:
-        main([])
+        with mock.patch('sys.argv', ['gendiff', '--help']):
+            main()
     except SystemExit:
         pass
     captured = capsys.readouterr()
-    assert NO_ARGS_ERROR_SUBSTRING in captured.err
+    assert argparse_help_output_fixture in captured.out
 
 
-def test_gendiff_main_with_one_arg(capsys):
+def test_gendiff_main_without_args(capsys, argparse_no_args_output_fixture):
     try:
-        main([TEST_FILES_RELATIVE_PATHS[FLAT_JSON_1]])
+        with mock.patch('sys.argv', ['gendiff']):
+            main()
     except SystemExit:
         pass
     captured = capsys.readouterr()
-    assert NO_SECOND_ARG_ERROR_SUBSTRING in captured.err
+    assert argparse_no_args_output_fixture in captured.err
 
 
-def test_gendiff_main_with_all_args(capsys):
+def test_gendiff_main_with_one_arg(capsys, argparse_no_second_file_output_fixture):
     try:
-        main([
-            *("-f", "stylish"),
-            TEST_FILES_RELATIVE_PATHS[FLAT_JSON_1],
-            TEST_FILES_RELATIVE_PATHS[FLAT_JSON_2],
-        ])
+        with mock.patch('sys.argv', ['gendiff', './tests/fixtures/json_fixtures/flat_before.json']):
+            main()
     except SystemExit:
         pass
     captured = capsys.readouterr()
-    assert FLAT_FILES_DIFF in captured.out
-
-
-def test_gendiff_main_call_help(capsys):
-    try:
-        main(["-h"])
-    except SystemExit:
-        pass
-    captured = capsys.readouterr()
-    print(captured.out)
-    assert HELP_OUTPUT in captured.out
+    assert argparse_no_second_file_output_fixture in captured.err
