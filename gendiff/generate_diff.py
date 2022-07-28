@@ -184,7 +184,7 @@ def get_data(url):
     return parsed_tree
 
 
-def generate_diff(first_file, second_file, formatter):
+def generate_diff(first_file, second_file, formatter='stylish'):
     """
     Generate string with diffs between two files.
 
