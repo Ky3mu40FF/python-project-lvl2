@@ -1,10 +1,18 @@
 [tool.poetry]
 name = "hexlet-code"
-version = "0.1.0"
-description = ""
+version = "1.0.0"
+description = "This package searchs difference between two files in JSON or YAML formats and displays result in multiple formats."
 authors = ["Алексей Фоминых <foma1994@yandex.ru>"]
+repository = "https://github.com/Ky3mu40FF/python-project-lvl2"
 packages = [
     { include = "gendiff" },
+]
+classifiers  = [
+    "Environment :: Console",
+    "Natural Language :: English",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Education",
 ]
 
 [tool.poetry.dependencies]
