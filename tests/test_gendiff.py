@@ -112,7 +112,7 @@ def test_gendiff(
 ):
     with open(expected, 'r') as file:
         expected_result = file.read().strip()
-    
+
     runtime_result = generate_diff(
         file_before,
         file_after,

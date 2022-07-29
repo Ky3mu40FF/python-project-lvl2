@@ -3,6 +3,7 @@ from unittest import mock
 from gendiff.scripts.gendiff import main
 import pytest
 
+
 @pytest.fixture
 def argparse_help_output_fixture():
     with open('./tests/fixtures/expected/argparse_help_output.txt', 'r') as file:
@@ -25,7 +26,7 @@ def argparse_no_second_file_output_fixture():
 
 
 def test_gendiff_main_call_help(capsys, argparse_help_output_fixture):
-    
+
     try:
         with mock.patch('sys.argv', ['gendiff', '--help']):
             main()
