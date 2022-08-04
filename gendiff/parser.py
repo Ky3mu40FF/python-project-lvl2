@@ -42,24 +42,14 @@ def get_available_parsers():
     })
 
 
-def parse_data(data_format, imported_data):
+def parse_file(file_format, file_content):
     """Open file with passed path.
 
     Args:
-        data_format (str): Data format (ex. json, yaml and etc).
-        imported_data (str|byte): Data to parse
+        file_format (str): File format (ex. json, yaml and etc).
+        file_content (str|byte): File to parse
 
     Returns:
         (dict): Dict of parsed file (json to dict).
-
-    Raises:
-        ValueError: Not supported file format.
     """
-    # Get file extension and check if this extension is supported.
-    available_parsers = get_available_parsers()
-    if data_format not in available_parsers:
-        raise ValueError('Given data format ({0}) is not supported'.format(
-            data_format,
-        ))
-
-    return get_available_parsers()[data_format](imported_data)
+    return get_available_parsers()[file_format](file_content)

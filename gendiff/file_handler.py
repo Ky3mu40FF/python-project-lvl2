@@ -3,7 +3,6 @@
 import os
 from collections import namedtuple
 from types import MappingProxyType  # Immutable dict for constant (WPS407)
-from urllib.parse import urlparse
 
 SUPPORTED_FILE_FORMATS = MappingProxyType({
     'json': ['.json'],
@@ -25,7 +24,7 @@ def get_file_format(file_extension):
             return file_format
 
 
-def open_local_file(filepath):
+def open_file(filepath):
     """Open local file with passed path.
 
     Args:
@@ -33,57 +32,15 @@ def open_local_file(filepath):
 
     Returns:
         (namedtuple[format, data]): Opened file with format.
-
-    Raises:
-        IOError: File does not exists or Not supported file format.
     """
-    if not os.path.exists(filepath):
-        raise IOError('File does not exists. \nFilepath: {0}'.format(
-            filepath,
-        ))
-
-    # Get file extension and check if this extension is supported.
     _, file_ext = os.path.splitext(filepath)
-    if not any(file_ext in ext for ext in SUPPORTED_FILE_FORMATS.values()):
-        raise IOError('File with "{0}" extension is not supported'.format(
-            file_ext,
-        ))
 
-    # Get file format using extension
     file_format = get_file_format(file_ext)
 
-    ImportedData = namedtuple('ImportedData', ['data_format', 'data'])
+    OpenedFile = namedtuple('OpenedFile', ['file_format', 'file_content'])
 
     with open(filepath, 'r') as input_file:
-        return ImportedData(
+        return OpenedFile(
             file_format,
             input_file.read(),
         )
-
-
-def import_data(url):
-    """Get info about data to import and choose way to import.
-
-    Args:
-        url (str): String with url to data.
-
-    Returns:
-        (namedtuple[format, data]): Imported data. None if import failed.
-
-    Raises:
-        IOError: Not supported URL scheme.
-    """
-    url_parse_result = urlparse(url)
-
-    imported_data = None
-
-    if not url_parse_result.scheme and not url_parse_result.netloc:
-        # Case: local file
-        imported_data = open_local_file(url)
-    else:
-        print('Given URL is not supported.')
-        raise IOError('Given URL is not supported.\nURL: {0}'.format(
-            url,
-        ))
-
-    return imported_data

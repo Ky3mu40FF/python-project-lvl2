@@ -10,9 +10,9 @@ from .change_state import (
     REMOVED,
     UNCHANGED,
 )
-from .file_handler import import_data
+from .file_handler import open_file
 from .formatters.formatters import FORMATTERS
-from .parser import parse_data
+from .parser import parse_file
 
 
 def set_state(change_state, key, child):
@@ -156,32 +156,21 @@ def format_diff(diff, formatter):
     return formatter(diff)
 
 
-def get_data(url):
+def get_data(file_path):
     """
     Try to open and parse given data.
 
     Args:
-        url (str): String with url to data.
+        file_path (str): String with path to file.
 
     Returns:
-        (any): Parsed data. None if import or parsing failed.
+        (any): Parsed file. None if import or parsing failed.
     """
-    try:
-        imported_data = import_data(url)
-    except IOError as imported_data_exception_info:
-        print(imported_data_exception_info)
-        return None
-
-    try:
-        parsed_tree = parse_data(
-            imported_data.data_format,
-            imported_data.data,
-        )
-    except ValueError as parsed_tree_exception_info:
-        print(parsed_tree_exception_info)
-        return None
-
-    return parsed_tree
+    opened_file = open_file(file_path)
+    return parse_file(
+        opened_file.file_format,
+        opened_file.file_content,
+    )
 
 
 def generate_diff(first_file, second_file, formatter='stylish'):
