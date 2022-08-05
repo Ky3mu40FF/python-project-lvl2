@@ -2,18 +2,20 @@
 
 from types import MappingProxyType
 
-from ..change_state import (
+from gendiff.change_status import (
     ADDED,
-    CHANGED_AFTER,
-    CHANGED_BEFORE,
+    CHANGED,
+    CHANGED_FROM,
+    CHANGED_TO,
     NESTED,
     REMOVED,
+    UNCHANGED,
 )
+from gendiff.diff_properties import DIFF_CHANGE_STATUS, DIFF_VALUE
 
 KEY_DIFF_TEMPLATES = MappingProxyType({
     ADDED: "Property '{0}' was added with value: {1}",
-    CHANGED_BEFORE: "Property '{0}' was updated. From {1} to {2}",
-    CHANGED_AFTER: "Property '{0}' was updated. From {1} to {2}",
+    CHANGED: "Property '{0}' was updated. From {1} to {2}",
     NESTED: '',
     REMOVED: "Property '{0}' was removed",
 })
@@ -24,21 +26,84 @@ VALUES_CONVERT_PAIRS = MappingProxyType({
     None: 'null',
 })
 
+PLAIN_CHANGE_STATUS = 'status'
+PLAIN_TEMPLATE = 'template'
+PLAIN_VALUE = 'value'
 
-def is_value_hashable(object_to_check):
-    """Check if given object hashable.
+
+def render(diff_data):
+    """Render dictionary with differences between two datasets into string.
 
     Args:
-        object_to_check (any): Object to chek if it is hashable.
+        diff_data (dict): Dictionary with differences.
 
     Returns:
-        (bool): True if hashable. False otherwise.
+        (str): String showing differences between two datasets.
     """
-    try:
-        hash(object_to_check)
-    except Exception:
-        return False
-    return True
+    diff_data_with_templates = prepare_templates_based_on_status(diff_data)
+
+    return differences_to_plain_format_string(diff_data_with_templates)
+
+
+def prepare_templates_based_on_status(diff_data):
+    """Set template for each type of difference.
+
+    Args:
+        diff_data (dict): Dictionary with differences.
+
+    Returns:
+        (dict): Dictionary with differences and matching templates to fill.
+    """
+    def walk(subtree, path=''):
+        level_diff = {}
+        for key, status_with_value in filter_subtree(subtree).items():
+
+            affected_property = '.'.join(
+                [path, key],
+            ).strip('.')
+
+            if status_with_value[DIFF_CHANGE_STATUS] == NESTED:
+                level_diff.update(walk(
+                    status_with_value[DIFF_VALUE],
+                    affected_property,
+                ))
+                continue
+
+            level_diff.setdefault(affected_property, {})
+            level_diff[affected_property].update({
+                PLAIN_CHANGE_STATUS: status_with_value[DIFF_CHANGE_STATUS],
+                PLAIN_TEMPLATE: KEY_DIFF_TEMPLATES[status_with_value[DIFF_CHANGE_STATUS]],
+            })
+            level_diff[affected_property][PLAIN_VALUE] = status_with_value[DIFF_VALUE]
+
+        return level_diff
+
+    return walk(diff_data)
+
+
+def differences_to_plain_format_string(dict_with_diffs):
+    """Convert prepared dict with differences to plain format string.
+
+    Args:
+        dict_with_diffs (dict): Prepared dictionary with differences.
+
+    Returns:
+        (str): Differences in Plain format.
+    """
+    output_lines = []
+    for affected_property, template_and_values in dict_with_diffs.items():
+        if template_and_values[PLAIN_CHANGE_STATUS] == CHANGED:
+            output_lines.append(template_and_values[PLAIN_TEMPLATE].format(
+                affected_property,
+                convert_value(template_and_values[PLAIN_VALUE][CHANGED_FROM]),
+                convert_value(template_and_values[PLAIN_VALUE][CHANGED_TO]),
+            ))
+        else:
+            output_lines.append(template_and_values[PLAIN_TEMPLATE].format(
+                affected_property,
+                convert_value(template_and_values[PLAIN_VALUE]),
+            ))
+    return '\n'.join(output_lines)
 
 
 def convert_value(value_to_convert):
@@ -71,107 +136,33 @@ def convert_value(value_to_convert):
     )
 
 
-def sort_diff_dict(dict_to_sort):
-    """Sort given dictionary with tuple as a key.
-
-    This functions sorts dictionary with structure:
-    {(change_state, property): value}.
-    First it sorts by change_state.
-    Than it sorts by property.
-    Sorting by change_state is for keep order: before -> after.
-    Sorting by property is ascending/alphabetically.
+def filter_subtree(subtree):
+    """Filter subtree to exclude unchanged elements.
 
     Args:
-        dict_to_sort (dict): Dictionary to sort.
+        subtree (dict): Subtree to filter.
 
     Returns:
-        (dict): Sorted dictionary.
-    """
-    # Sorting dictionary by change state stored in composite key
-    dict_sorted_by_change_state = {
-        tuple_key: dict_to_sort[tuple_key]
-        for tuple_key in sorted(
-            dict_to_sort.keys(),
-            key=lambda key_to_sort: key_to_sort[0],
-            reverse=True,
-        )
-    }
-    # Sorting and returning dictionary by keys's value stored in composite key
-    return {
-        tuple_key: dict_sorted_by_change_state[tuple_key]
-        for tuple_key in sorted(
-            dict_sorted_by_change_state.keys(),
-            key=lambda key_to_sort: key_to_sort[1],
-            reverse=False,
-        )
-    }
-
-
-def filter_diff_dict(dict_to_filter):
-    """Filter given dict to exclude unnecessary change_states.
-
-    Args:
-        dict_to_filter (dict): Dictionary to filter.
-
-    Returns:
-        (dict): Filtered dictionary.
+        (dict): Filtered subtree.
     """
     return {
-        composite_key: compared_value
-        for composite_key, compared_value in dict_to_filter.items()
-        if composite_key.state in KEY_DIFF_TEMPLATES
+        subtree_key: subtree_value
+        for (subtree_key, subtree_value) in subtree.items()
+        if subtree_value[DIFF_CHANGE_STATUS] != UNCHANGED
     }
 
 
-def differences_to_plain_format_string(dict_with_diffs):
-    """Convert prepared dict with differences to plain format string.
+def is_value_hashable(object_to_check):
+    """Check if given object hashable.
 
     Args:
-        dict_with_diffs (dict): Prepared dictionary with differences.
+        object_to_check (any): Object to chek if it is hashable.
 
     Returns:
-        (str): Differences in Plain format.
+        (bool): True if hashable. False otherwise.
     """
-    output_lines = []
-    for affected_property, template_and_values in dict_with_diffs.items():
-        output_lines.append(template_and_values['template'].format(
-            affected_property,
-            *template_and_values['values'],
-        ))
-    return '\n'.join(output_lines)
-
-
-def render(diff_data):
-    """Render dictionary with differences between two datasets into string.
-
-    Args:
-        diff_data (dict): Dictionary with differences.
-
-    Returns:
-        (str): String showing differences between two datasets.
-    """
-    def walk(subtree, path=''):
-        level_diff = {}
-        adapted_diff_dict = filter_diff_dict(sort_diff_dict(subtree))
-        for composite_key, compared_value in adapted_diff_dict.items():
-
-            affected_property = '.'.join(
-                [path, composite_key.property],
-            ).strip('.')
-
-            if composite_key.state == NESTED:
-                level_diff.update(walk(compared_value, affected_property))
-                continue
-
-            level_diff.setdefault(affected_property, {})
-            level_diff[affected_property].update({
-                'template': KEY_DIFF_TEMPLATES[composite_key.state],
-            })
-            level_diff[affected_property].setdefault(
-                'values',
-                [],
-            ).append(convert_value(compared_value))
-
-        return level_diff
-
-    return differences_to_plain_format_string(walk(diff_data))
+    try:
+        hash(object_to_check)
+    except Exception:
+        return False
+    return True

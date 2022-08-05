@@ -2,19 +2,21 @@
 
 from types import MappingProxyType  # Immutable dict for constant (WPS407)
 
-from ..change_state import (
+from gendiff.change_status import (
     ADDED,
-    CHANGED_AFTER,
-    CHANGED_BEFORE,
+    CHANGED,
+    CHANGED_FROM,
+    CHANGED_TO,
     NESTED,
     REMOVED,
     UNCHANGED,
 )
+from gendiff.diff_properties import DIFF_CHANGE_STATUS, DIFF_VALUE
 
 KEY_DIFF_SIGNS = MappingProxyType({
     ADDED: '+',
-    CHANGED_AFTER: '+',
-    CHANGED_BEFORE: '-',
+    CHANGED_FROM: '-',
+    CHANGED_TO: '+',
     NESTED: ' ',
     REMOVED: '-',
     UNCHANGED: ' ',
@@ -25,6 +27,137 @@ VALUES_CONVERT_PAIRS = MappingProxyType({
     False: 'false',
     None: 'null',
 })
+
+
+def render(diff_data):
+    """Render difference data in stylish format.
+
+    Args:
+        diff_data (dict): Dictionary with differences.
+
+    Returns:
+        (str): String with differences in stylish format.
+    """
+    def walk(subtree, depth=1):
+        level_diff = []
+        for key, status_with_value in subtree.items():
+            if status_with_value[DIFF_CHANGE_STATUS] == NESTED:
+                level_diff.append(format_diff_output(
+                    compared_key=key,
+                    compared_value='\n'.join(walk(
+                        status_with_value[DIFF_VALUE],
+                        depth + 1,
+                    )),
+                    change_state=status_with_value[DIFF_CHANGE_STATUS],
+                    depth=depth,
+                ))
+                continue
+            level_diff.append(format_diff_output(
+                compared_key=key,
+                compared_value=status_with_value[DIFF_VALUE],
+                change_state=status_with_value[DIFF_CHANGE_STATUS],
+                depth=depth,
+            ))
+        return level_diff
+
+    return '\n'.join(['{', *walk(diff_data), '}'])
+
+
+def format_diff_output(
+    compared_key,
+    compared_value,
+    change_state,
+    depth,
+):
+    """Generate formatted string with diff between two files at specific key.
+
+    Args:
+        compared_key (str): Key.
+        compared_value (any): Value.
+        change_state (str): Type of difference.
+        depth (int): Number of current level in nested structure.
+
+    Returns:
+        (str): String with difference of two files at specific key.
+    """
+    indent = generate_indent(level=depth)
+
+    if change_state == NESTED:
+        return '{0}{1} {2}: {{\n{3}\n{4}}}'.format(
+            indent[:-2],  # amount of spaces according depth.
+            KEY_DIFF_SIGNS[change_state],  # Diff sign.
+            compared_key,
+            format_child(
+                convert_value(compared_value),
+                depth,
+            ),
+            indent,
+        )
+
+    if change_state == CHANGED:
+        change = []
+        change.append('{0}{1} {2}: {3}'.format(
+            indent[:-2],  # amount of spaces according depth.
+            KEY_DIFF_SIGNS[CHANGED_FROM],
+            compared_key,
+            format_child(
+                convert_value(compared_value[CHANGED_FROM]),
+                depth,
+            ),
+        ))
+        change.append('{0}{1} {2}: {3}'.format(
+            indent[:-2],  # amount of spaces according depth.
+            KEY_DIFF_SIGNS[CHANGED_TO],
+            compared_key,
+            format_child(
+                convert_value(compared_value[CHANGED_TO]),
+                depth,
+            ),
+        ))
+        return '\n'.join(change)
+
+    return '{0}{1} {2}: {3}'.format(
+        indent[:-2],  # amount of spaces according depth.
+        KEY_DIFF_SIGNS[change_state],
+        compared_key,
+        format_child(
+            convert_value(compared_value),
+            depth,
+        ),
+    )
+
+
+def format_child(child, depth):
+    """Format child to output.
+
+    Args:
+        child (any): Child to format.
+        depth (int): Depth of parent.
+
+    Returns:
+        (any): Formatted child.
+    """
+    if isinstance(child, dict):
+        elements = ['{']
+        elements_indent = generate_indent(depth + 1)
+        for key, child_value in child.items():
+            if isinstance(child_value, dict):
+                elements.append('{0}{1}: {2}'.format(
+                    elements_indent,
+                    key,
+                    format_child(child_value, depth + 1),
+                ))
+                continue
+            elements.append('{0}{1}: {2}'.format(
+                elements_indent,
+                key,
+                child_value,
+            ))
+        elements.append('{0}}}'.format(
+            generate_indent(depth),
+        ))
+        return '\n'.join(elements)
+    return child
 
 
 def generate_indent(
@@ -66,115 +199,3 @@ def convert_value(value_to_convert):
         value_to_convert,
         value_to_convert,
     )
-
-
-def format_diff_output(
-    compared_key,
-    compared_value,
-    change_state,
-    is_nested,
-    depth,
-):
-    """Generate formatted string with diff between two files at specific key.
-
-    Args:
-        compared_key (str): Key.
-        compared_value (any): Value.
-        change_state (str): Type of difference.
-        is_nested (bool): Is given value nested?
-        depth (int): Number of current level in nested structure.
-
-    Returns:
-        (str): String with difference of two files at specific key.
-    """
-    indent = generate_indent(level=depth)
-
-    if is_nested:
-        return '{0}{1} {2}: {{\n{3}\n{4}}}'.format(
-            indent[:-2],  # amount of spaces according depth.
-            KEY_DIFF_SIGNS[change_state],  # Diff sign.
-            compared_key,
-            convert_value(compared_value),
-            indent,
-        )
-
-    return '{0}{1} {2}: {3}'.format(
-        indent[:-2],  # amount of spaces according depth.
-        KEY_DIFF_SIGNS[change_state],
-        compared_key,
-        convert_value(compared_value),
-    )
-
-
-def sort_diff_dict(dict_to_sort):
-    """Sort given dictionary with tuple as a key.
-
-    This functions sorts dictionary with next structure:
-    {(change_state, key): value}.
-    First it sorts by change_state.
-    Than it sorts by key value.
-    Sorting by change_state is for keep order: before -> after.
-    Sorting by key is ascending/alphabetically.
-
-    Args:
-        dict_to_sort (dict): Dictionary to sort.
-
-    Returns:
-        (str): String with difference of two files at specific key.
-    """
-    # Sorting dictionary by change state stored in composite key
-    dict_sorted_by_change_state = {
-        tuple_key: dict_to_sort[tuple_key]
-        for tuple_key in sorted(
-            dict_to_sort.keys(),
-            key=lambda key_to_sort: key_to_sort[0],
-            reverse=True,
-        )
-    }
-    # Sorting and returning dictionary by keys's value stored in composite key
-    return {
-        tuple_key: dict_sorted_by_change_state[tuple_key]
-        for tuple_key in sorted(
-            dict_sorted_by_change_state.keys(),
-            key=lambda key_to_sort: key_to_sort[1],
-            reverse=False,
-        )
-    }
-
-
-def render(diff_data):
-    """Render dictionary with differences between two datasets into string.
-
-    Args:
-        diff_data (dict): Dictionary with differences.
-
-    Returns:
-        (str): String showing differences between two datasets.
-    """
-    def walk(subtree, depth=1):
-        level_diff = []
-
-        for state_with_key, compared_value in sort_diff_dict(subtree).items():
-            state, key = state_with_key
-
-            if isinstance(compared_value, dict):
-                level_diff.append(format_diff_output(
-                    compared_key=key,
-                    compared_value='\n'.join(walk(compared_value, depth + 1)),
-                    change_state=state,
-                    is_nested=True,
-                    depth=depth,
-                ))
-                continue
-
-            level_diff.append(format_diff_output(
-                compared_key=key,
-                compared_value=compared_value,
-                change_state=state,
-                is_nested=False,
-                depth=depth,
-            ))
-
-        return level_diff
-
-    return '\n'.join(['{', *walk(diff_data), '}'])

@@ -1,5 +1,8 @@
 """change_state module."""
 UNCHANGED = 'unchanged'
+CHANGED = 'changed'
+CHANGED_FROM = 'changed_from'
+CHANGED_TO = 'changed_to'
 CHANGED_BEFORE = 'changed_before'
 CHANGED_AFTER = 'changed_after'
 ADDED = 'added'
