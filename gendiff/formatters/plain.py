@@ -1,5 +1,6 @@
 """gendiff.formatters.stylish module."""
 
+import json
 from types import MappingProxyType
 
 from gendiff.change_type import (
@@ -109,31 +110,17 @@ def differences_to_plain_format_string(dict_with_diffs):
 def convert_value(value_to_convert):
     """Convert given value from Python format to JSON format.
 
-    If value should be converted to JSON format,
-    function will return string with converted value.
-    Else same value will be returned.
-
     Args:
         value_to_convert (any): Value to convert to JSON format.
 
     Returns:
         (any): Converted value to JSON format.
     """
-    # Check if given value not hashable (dict for example).
-    # to prevent exception at searching for value
-    # in keys of VALUES_CONVERT_PAIRS dict.
-    if not is_value_hashable(value_to_convert):
-        if isinstance(value_to_convert, dict):
-            return '[complex value]'
-        return repr(value_to_convert)
-    if not (isinstance(value_to_convert, bool) or value_to_convert is None):
-        return repr(value_to_convert)
-    # Return value from defined converting pairs.
-    # Otherwise return printable representational string of the given value.
-    return VALUES_CONVERT_PAIRS.get(
-        value_to_convert,
-        repr(value_to_convert),
-    )
+    if isinstance(value_to_convert, dict):
+        return '[complex value]'
+    elif value_to_convert in (True, False, None):
+        return json.dumps(value_to_convert)
+    return repr(value_to_convert)
 
 
 def filter_subtree(subtree):
@@ -150,19 +137,3 @@ def filter_subtree(subtree):
         for (subtree_key, subtree_value) in subtree.items()
         if subtree_value[DIFF_CHANGE_TYPE] != UNCHANGED
     }
-
-
-def is_value_hashable(object_to_check):
-    """Check if given object hashable.
-
-    Args:
-        object_to_check (any): Object to chek if it is hashable.
-
-    Returns:
-        (bool): True if hashable. False otherwise.
-    """
-    try:
-        hash(object_to_check)
-    except Exception:
-        return False
-    return True

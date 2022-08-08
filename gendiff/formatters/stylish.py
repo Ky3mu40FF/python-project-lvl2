@@ -1,6 +1,7 @@
 """gendiff.formatters.stylish module."""
 
 from types import MappingProxyType  # Immutable dict for constant (WPS407)
+import json
 
 from gendiff.change_type import (
     ADDED,
@@ -181,21 +182,12 @@ def generate_indent(
 def convert_value(value_to_convert):
     """Convert given value from Python format to JSON format.
 
-    If value should be converted to JSON format,
-    function will return string with converted value.
-    Else same value will be returned.
-
     Args:
         value_to_convert (any): Value to convert to JSON format.
 
     Returns:
         (any): Converted value to JSON format.
     """
-    if not (isinstance(value_to_convert, bool) or value_to_convert is None):
-        return value_to_convert
-    # If value not found in keys,
-    # than return value as is
-    return VALUES_CONVERT_PAIRS.get(
-        value_to_convert,
-        value_to_convert,
-    )
+    if value_to_convert in (True, False, None):
+        return json.dumps(value_to_convert)
+    return value_to_convert
