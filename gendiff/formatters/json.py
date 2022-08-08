@@ -15,4 +15,5 @@ def render(diff_data):
     return json.dumps(
         obj=diff_data,
         indent=4,
+        sort_keys=True,
     )
