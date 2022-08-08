@@ -2,7 +2,7 @@
 
 from types import MappingProxyType  # Immutable dict for constant (WPS407)
 
-from gendiff.change_status import (
+from gendiff.change_type import (
     ADDED,
     CHANGED,
     CHANGED_FROM,
@@ -11,7 +11,7 @@ from gendiff.change_status import (
     REMOVED,
     UNCHANGED,
 )
-from gendiff.diff_properties import DIFF_CHANGE_STATUS, DIFF_VALUE
+from gendiff.diff_properties import DIFF_CHANGE_TYPE, DIFF_VALUE
 
 KEY_DIFF_SIGNS = MappingProxyType({
     ADDED: '+',
@@ -41,21 +41,21 @@ def render(diff_data):
     def walk(subtree, depth=1):
         level_diff = []
         for key, status_with_value in subtree.items():
-            if status_with_value[DIFF_CHANGE_STATUS] == NESTED:
+            if status_with_value[DIFF_CHANGE_TYPE] == NESTED:
                 level_diff.append(format_diff_output(
                     compared_key=key,
                     compared_value='\n'.join(walk(
                         status_with_value[DIFF_VALUE],
                         depth + 1,
                     )),
-                    change_state=status_with_value[DIFF_CHANGE_STATUS],
+                    change_state=status_with_value[DIFF_CHANGE_TYPE],
                     depth=depth,
                 ))
                 continue
             level_diff.append(format_diff_output(
                 compared_key=key,
                 compared_value=status_with_value[DIFF_VALUE],
-                change_state=status_with_value[DIFF_CHANGE_STATUS],
+                change_state=status_with_value[DIFF_CHANGE_TYPE],
                 depth=depth,
             ))
         return level_diff

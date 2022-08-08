@@ -3,7 +3,7 @@
 # because None is representing null after json parsing
 from types import SimpleNamespace
 
-from gendiff.change_status import (
+from gendiff.change_type import (
     ADDED,
     CHANGED,
     CHANGED_FROM,
@@ -13,7 +13,7 @@ from gendiff.change_status import (
     UNCHANGED,
 )
 
-DIFF_CHANGE_STATUS = 'status'
+DIFF_CHANGE_TYPE = 'change_type'
 DIFF_VALUE = 'value'
 
 
@@ -32,21 +32,21 @@ def compare_tree(tree1, tree2):
     # -> Property was added.
     if type(tree1) is SimpleNamespace:
         return {
-            DIFF_CHANGE_STATUS: ADDED,
+            DIFF_CHANGE_TYPE: ADDED,
             DIFF_VALUE: tree2,
         }
     # Child not found in tree2
     # -> Property was removed.
     elif type(tree2) is SimpleNamespace:
         return {
-            DIFF_CHANGE_STATUS: REMOVED,
+            DIFF_CHANGE_TYPE: REMOVED,
             DIFF_VALUE: tree1,
         }
     # One of the children or both of them are not dicts and they are not equal
     # -> Property was changed.
     elif type(tree1) != type(tree2) or not isinstance(tree1, dict) and tree1 != tree2:
         return {
-            DIFF_CHANGE_STATUS: CHANGED,
+            DIFF_CHANGE_TYPE: CHANGED,
             DIFF_VALUE: {
                 CHANGED_FROM: tree1,
                 CHANGED_TO: tree2,
@@ -56,7 +56,7 @@ def compare_tree(tree1, tree2):
     # -> Property unchanged.
     elif tree1 == tree2:
         return {
-            DIFF_CHANGE_STATUS: UNCHANGED,
+            DIFF_CHANGE_TYPE: UNCHANGED,
             DIFF_VALUE: tree1,
         }
     # Both children are dicts and not equal
@@ -71,7 +71,7 @@ def compare_tree(tree1, tree2):
             nested_compare_result = compare_tree(tree1_value, tree2_value)
             if isinstance(tree1_value, dict) and isinstance(tree2_value, dict):
                 differences[key] = {
-                    DIFF_CHANGE_STATUS: NESTED,
+                    DIFF_CHANGE_TYPE: NESTED,
                     DIFF_VALUE: nested_compare_result,
                 }
             else:

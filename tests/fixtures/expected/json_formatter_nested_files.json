@@ -1,44 +1,44 @@
 {
     "common": {
-        "status": "nested",
+        "change_type": "nested",
         "value": {
             "follow": {
-                "status": "added",
+                "change_type": "added",
                 "value": false
             },
             "setting1": {
-                "status": "unchanged",
+                "change_type": "unchanged",
                 "value": "Value 1"
             },
             "setting2": {
-                "status": "removed",
+                "change_type": "removed",
                 "value": 200
             },
             "setting3": {
-                "status": "changed",
+                "change_type": "changed",
                 "value": {
                     "changed_from": true,
                     "changed_to": null
                 }
             },
             "setting4": {
-                "status": "added",
+                "change_type": "added",
                 "value": "blah blah"
             },
             "setting5": {
-                "status": "added",
+                "change_type": "added",
                 "value": {
                     "key5": "value5"
                 }
             },
             "setting6": {
-                "status": "nested",
+                "change_type": "nested",
                 "value": {
                     "doge": {
-                        "status": "nested",
+                        "change_type": "nested",
                         "value": {
                             "wow": {
-                                "status": "changed",
+                                "change_type": "changed",
                                 "value": {
                                     "changed_from": "",
                                     "changed_to": "so much"
@@ -47,11 +47,11 @@
                         }
                     },
                     "key": {
-                        "status": "unchanged",
+                        "change_type": "unchanged",
                         "value": "value"
                     },
                     "ops": {
-                        "status": "added",
+                        "change_type": "added",
                         "value": "vops"
                     }
                 }
@@ -59,21 +59,21 @@
         }
     },
     "group1": {
-        "status": "nested",
+        "change_type": "nested",
         "value": {
             "baz": {
-                "status": "changed",
+                "change_type": "changed",
                 "value": {
                     "changed_from": "bas",
                     "changed_to": "bars"
                 }
             },
             "foo": {
-                "status": "unchanged",
+                "change_type": "unchanged",
                 "value": "bar"
             },
             "nest": {
-                "status": "changed",
+                "change_type": "changed",
                 "value": {
                     "changed_from": {
                         "key": "value"
@@ -84,7 +84,7 @@
         }
     },
     "group2": {
-        "status": "removed",
+        "change_type": "removed",
         "value": {
             "abc": 12345,
             "deep": {
@@ -93,7 +93,7 @@
         }
     },
     "group3": {
-        "status": "added",
+        "change_type": "added",
         "value": {
             "deep": {
                 "id": {

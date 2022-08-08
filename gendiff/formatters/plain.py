@@ -2,7 +2,7 @@
 
 from types import MappingProxyType
 
-from gendiff.change_status import (
+from gendiff.change_type import (
     ADDED,
     CHANGED,
     CHANGED_FROM,
@@ -11,7 +11,7 @@ from gendiff.change_status import (
     REMOVED,
     UNCHANGED,
 )
-from gendiff.diff_properties import DIFF_CHANGE_STATUS, DIFF_VALUE
+from gendiff.diff_properties import DIFF_CHANGE_TYPE, DIFF_VALUE
 
 KEY_DIFF_TEMPLATES = MappingProxyType({
     ADDED: "Property '{0}' was added with value: {1}",
@@ -26,7 +26,7 @@ VALUES_CONVERT_PAIRS = MappingProxyType({
     None: 'null',
 })
 
-PLAIN_CHANGE_STATUS = 'status'
+PLAIN_CHANGE_TYPE = 'change_type'
 PLAIN_TEMPLATE = 'template'
 PLAIN_VALUE = 'value'
 
@@ -62,7 +62,7 @@ def prepare_templates_based_on_status(diff_data):
                 [path, key],
             ).strip('.')
 
-            if status_with_value[DIFF_CHANGE_STATUS] == NESTED:
+            if status_with_value[DIFF_CHANGE_TYPE] == NESTED:
                 level_diff.update(walk(
                     status_with_value[DIFF_VALUE],
                     affected_property,
@@ -71,8 +71,8 @@ def prepare_templates_based_on_status(diff_data):
 
             level_diff.setdefault(affected_property, {})
             level_diff[affected_property].update({
-                PLAIN_CHANGE_STATUS: status_with_value[DIFF_CHANGE_STATUS],
-                PLAIN_TEMPLATE: KEY_DIFF_TEMPLATES[status_with_value[DIFF_CHANGE_STATUS]],
+                PLAIN_CHANGE_TYPE: status_with_value[DIFF_CHANGE_TYPE],
+                PLAIN_TEMPLATE: KEY_DIFF_TEMPLATES[status_with_value[DIFF_CHANGE_TYPE]],
             })
             level_diff[affected_property][PLAIN_VALUE] = status_with_value[DIFF_VALUE]
 
@@ -92,7 +92,7 @@ def differences_to_plain_format_string(dict_with_diffs):
     """
     output_lines = []
     for affected_property, template_and_values in dict_with_diffs.items():
-        if template_and_values[PLAIN_CHANGE_STATUS] == CHANGED:
+        if template_and_values[PLAIN_CHANGE_TYPE] == CHANGED:
             output_lines.append(template_and_values[PLAIN_TEMPLATE].format(
                 affected_property,
                 convert_value(template_and_values[PLAIN_VALUE][CHANGED_FROM]),
@@ -148,7 +148,7 @@ def filter_subtree(subtree):
     return {
         subtree_key: subtree_value
         for (subtree_key, subtree_value) in subtree.items()
-        if subtree_value[DIFF_CHANGE_STATUS] != UNCHANGED
+        if subtree_value[DIFF_CHANGE_TYPE] != UNCHANGED
     }
 
 
