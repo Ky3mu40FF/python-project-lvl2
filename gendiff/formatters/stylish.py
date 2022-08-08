@@ -1,7 +1,7 @@
 """gendiff.formatters.stylish module."""
 
-from types import MappingProxyType  # Immutable dict for constant (WPS407)
 import json
+from types import MappingProxyType  # Immutable dict for constant (WPS407)
 
 from gendiff.change_type import (
     ADDED,
@@ -188,6 +188,6 @@ def convert_value(value_to_convert):
     Returns:
         (any): Converted value to JSON format.
     """
-    if value_to_convert in (True, False, None):
+    if value_to_convert in (True, False, None):  # noqa: WPS510
         return json.dumps(value_to_convert)
     return value_to_convert

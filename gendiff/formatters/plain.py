@@ -118,7 +118,7 @@ def convert_value(value_to_convert):
     """
     if isinstance(value_to_convert, dict):
         return '[complex value]'
-    elif value_to_convert in (True, False, None):
+    elif value_to_convert in (True, False, None):  # noqa: WPS510
         return json.dumps(value_to_convert)
     return repr(value_to_convert)
 
